@@ -2,12 +2,11 @@ import { Layout, Menu } from "antd";
 import { Link } from "react-router-dom";
 import {
   DashboardOutlined,
-   
-  TagsOutlined,
   UserOutlined,
-  LineChartOutlined,
-  BellOutlined,
   SettingOutlined,
+  ProductOutlined,
+  ShopOutlined,
+  CopyrightOutlined,
 } from "@ant-design/icons";
 
 const { Sider } = Layout;
@@ -51,17 +50,15 @@ const Sidebar = () => {
         <Menu.Item key="2" icon={<UserOutlined />}>
           <Link to="/admin/User">Users</Link>
         </Menu.Item>
-        <Menu.Item key="3" icon={<TagsOutlined />}>
-          <Link to="/admin/flash-sales">Flash Sales</Link>
+      
+        <Menu.Item key="4" icon={<ProductOutlined />}>
+          <Link to="/admin/product">Product</Link>
         </Menu.Item>
-        <Menu.Item key="4" icon={<UserOutlined />}>
-          <Link to="/admin/customers">Customers</Link>
+        <Menu.Item key="5" icon={<CopyrightOutlined />}>
+          <Link to="/admin/Category">Category</Link>
         </Menu.Item>
-        <Menu.Item key="5" icon={<LineChartOutlined />}>
-          <Link to="/admin/analytics">Analytics</Link>
-        </Menu.Item>
-        <Menu.Item key="6" icon={<BellOutlined />}>
-          <Link to="/admin/notifications">Notifications</Link>
+        <Menu.Item key="6" icon={<ShopOutlined />}>
+          <Link to="/admin/Shop">Shop</Link>
         </Menu.Item>
         <Menu.Item key="7" icon={<SettingOutlined />}>
           <Link to="/admin/settings">Settings</Link>

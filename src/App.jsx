@@ -9,12 +9,15 @@ import { AuthProvider } from "./context/AuthContext";
 // Import Dashboard Pages
 import Dashboard from "./pages/Dashboard";
 
-import Analytics from "./pages/Analytics";
-import Customers from "./pages/Customers";
+ 
+ 
 import FlashSales from "./pages/FlashSales";
-import Notifications from "./pages/Notifications";
+ 
 import Settings from "./pages/Settings";
 import User from "./pages/User";
+import Prouducts from "./pages/Prouducts";
+import Shop from "./pages/Shop";
+import Category from "./pages/Category";
 
 const App = () => {
   return (
@@ -37,10 +40,10 @@ const App = () => {
                     <Route path="/" element={<Navigate to="dashboard" />} />
                     <Route path="dashboard" element={<Dashboard />} />
                     <Route path="User" element={<User/>} />
-                    <Route path="analytics" element={<Analytics />} />
-                    <Route path="customers" element={<Customers />} />
+                    <Route path="Category" element={<Category />} />
+                    <Route path="product" element={<Prouducts />} />
                     <Route path="flash-sales" element={<FlashSales />} />
-                    <Route path="notifications" element={<Notifications />} />
+                    <Route path="Shop" element={<Shop />} />
                     <Route path="settings" element={<Settings />} />
                   </Routes>
                 </DashboardLayout>

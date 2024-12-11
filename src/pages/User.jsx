@@ -1,13 +1,16 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+// src/pages/User.js
+import   { useState } from "react";
 import { Table, Tag, Button, message } from "antd";
 import { useAuth } from "../context/AuthContext";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
+import AddUserModal from "../components/AddUserModal";
 
 // Fetch users from the API
 const fetchUsers = async ({ queryKey }) => {
   const [, token] = queryKey; // Destructure token from queryKey
   const response = await axios.get(
-    "https://e-commerce-api-v1-cdk5.onrender.com/api/v1/users/?page=2&limit=50",
+    "https://e-commerce-api-v1-cdk5.onrender.com/api/v1/users",
     {
       headers: {
         Authorization: `Bearer ${token}`, // Include the token in the headers
@@ -32,6 +35,7 @@ const deleteUser = async ({ id, token }) => {
 const User = () => {
   const { auth } = useAuth(); // Access the token from AuthContext
   const queryClient = useQueryClient(); // React Query's QueryClient instance
+  const [isModalVisible, setIsModalVisible] = useState(false); // State to control modal visibility
 
   // Fetch users with React Query
   const { data: users, isLoading, refetch } = useQuery({
@@ -91,9 +95,7 @@ const User = () => {
       key: "action",
       render: (_, record) => (
         <div className="flex gap-2">
-          <Button type="link" onClick={() => handleEdit(record)}>
-            Edit
-          </Button>
+          
           <Button
             type="link"
             danger
@@ -118,17 +120,16 @@ const User = () => {
     }
   };
 
-  // Placeholder function for handling edit
-  const handleEdit = (record) => {
-    console.log("Edit user:", record);
-  };
-
+ 
   return (
     <div className="p-4">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold">Users</h2>
-        <Button type="primary" onClick={refetch}>
-          Refresh
+        <Button
+          type="primary"
+          onClick={() => setIsModalVisible(true)} // Open modal on button click
+        >
+          Add User
         </Button>
       </div>
       <Table
@@ -138,6 +139,12 @@ const User = () => {
         rowKey={(record) => record._id} // Use `_id` as the unique key
         pagination={{ pageSize: 10 }}
         bordered
+      />
+      <AddUserModal
+        visible={isModalVisible}
+        onClose={() => setIsModalVisible(false)} // Close modal on cancel
+        onSuccess={refetch} // Refetch users after a successful add
+        token={auth.token} // Pass token to modal for API request
       />
     </div>
   );
