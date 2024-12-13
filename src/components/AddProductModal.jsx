@@ -1,144 +1,93 @@
-/* eslint-disable react/prop-types */
-import { Modal, Form, Input, InputNumber, Button, message, Select } from 'antd';
-import { useFormik } from 'formik';
-import * as Yup from 'yup';
-import axios from 'axios';
-import { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { UploadOutlined } from "@ant-design/icons";
+import { Button, Input, InputNumber, message, Modal, Select, Upload, Form } from "antd";
+import { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import axios from "axios";
+import PropTypes from "prop-types"; // Import PropTypes
 
-const AddProductModal = ({ visible, onClose, onAddSuccess }) => {
-  const { auth } = useAuth(); // Access the auth context to get the token
-  const [categories, setCategories] = useState([]); // State to store categories
-  const [loadingCategories, setLoadingCategories] = useState(false); // Loading state for categories
-  const [hasMore, setHasMore] = useState(true); // State to track if there are more categories to fetch
-  const [page, setPage] = useState(1); // State for pagination
-  const [imageFile, setImageFile] = useState(null); // For storing image cover file
-  const [imageCoverFile, setImageCoverFile] = useState(null); // For storing image cover file
+export default function AddProductModal({ visible, onClose, onAddSuccess }) {
+  const [loading, setLoading] = useState(false);
+  const { auth } = useAuth(); // Access token for authorization
+  const [form] = Form.useForm();
+  const [categories, setCategories] = useState([]); // State for categories
+  const [imageFile, setImageFile] = useState(null); // State for image file
+  const [imageCoverFile, setImageCoverFile] = useState(null); // State for image cover file
 
-  // Fetch categories when the component mounts or page changes
+  // Fetch categories from the API
   useEffect(() => {
     const fetchCategories = async () => {
-      if (!hasMore) return; // If there are no more categories, stop fetching
-
-      setLoadingCategories(true);
       try {
-        const response = await axios.get('https://e-commerce-api-v1-cdk5.onrender.com/api/v1/categories', {
-          params: {
-            page,
-            limit: 315, // Adjust limit if needed
-          },
-        });
-
-        // Access the categories data inside response.data.data
-        const categoriesData = response.data.data;
-
-        if (Array.isArray(categoriesData)) {
-          setCategories((prevCategories) => [
-            ...prevCategories,
-            ...categoriesData, // Append new categories
-          ]);
-
-          // Check if there are more categories to fetch
-          if (categoriesData.length < 315) {
-            setHasMore(false); // No more categories left
-          } else {
-            setPage(page + 1); // Move to the next page
-          }
-        } else {
-          console.error('Categories data is not an array:', response.data);
-        }
+        const response = await axios.get('https://e-commerce-api-v1-cdk5.onrender.com/api/v1/categories');
+        setCategories(response.data.data); // Set the categories
       } catch (error) {
         console.error('Error fetching categories:', error);
-        message.error('Failed to fetch categories.');
-      } finally {
-        setLoadingCategories(false);
+        message.error('Failed to load categories.');
       }
     };
+
     fetchCategories();
-  }, [page, hasMore]);
+  }, []);
 
-  // Formik initial values and validation schema
-  const formik = useFormik({
-    initialValues: {
-      name: '',
-      description: '',
-      price: 0,
-      priceAfterDiscount: 0,
-      quantity: 0,
-      color: '',
-      imagecover: '',
-      image: '',
-      category: '',
-      title: '',
-      sold: 0,
-    },
-    validationSchema: Yup.object({
-      name: Yup.string().required('Product name is required'),
-      description: Yup.string().required('Description is required'),
-      price: Yup.number().min(0, 'Price cannot be less than 0').required('Price is required'),
-      quantity: Yup.number().min(0, 'Quantity cannot be less than 0').required('Quantity is required'),
-      imagecover: Yup.mixed().required('Cover image is required'),
-      image: Yup.mixed().required('Product image is required'),
-      category: Yup.string().required('Category is required'),
-      title: Yup.string().required('Product title is required'),
-      sold: Yup.number().min(0, 'Sold value cannot be negative').required('Sold value is required'),
-    }),
-    onSubmit: async (values) => {
-      try {
-        const formData = new FormData();
-        formData.append('name', values.name);
-        formData.append('description', values.description);
-        formData.append('price', values.price);
-        formData.append('priceAfterDiscount', values.priceAfterDiscount);
-        formData.append('quantity', values.quantity);
-        formData.append('color', values.color ? values.color.split(',') : []); // Convert color to array if provided
-        formData.append('imagecover', imageCoverFile); // Add image cover file
-        formData.append('image', imageFile); // Add product image file
-        formData.append('category', values.category); // Send category ID
-        formData.append('title', values.title);
-        formData.append('sold', values.sold); // Add sold field
+  // Handle form submission
+  const handleAddProduct = async (values) => {
+    setLoading(true);
 
-        // Make the POST request
-        const response = await axios.post(
-          'https://e-commerce-api-v1-cdk5.onrender.com/api/v1/products',
-          formData,
-          {
-            headers: {
-              'Authorization': `Bearer ${auth.token}`,
-              'Content-Type': 'multipart/form-data', // Set content type to multipart/form-data
-            },
-          }
-        );
+    // Create FormData to send the image and image cover as files
+    const formData = new FormData();
 
-        // Check if the response is successful
-        if (response.status === 201) {
-          message.success('Product added successfully!');
-          onAddSuccess(); // Callback to refresh the product list
-          onClose(); // Close the modal
-          formik.resetForm(); // Reset the form
-        } else {
-          throw new Error('Failed to add product');
-        }
-      } catch (error) {
-        console.error('Error adding product:', error);
-        message.error('Failed to add product. Please try again.');
+    // Append text fields (excluding image and imagecover)
+    Object.keys(values).forEach((key) => {
+      if (key !== 'image' && key !== 'imagecover') {
+        formData.append(key, values[key]);
       }
-    },
-  });
+    });
 
-  // Handling image file change
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImageFile(file);
+    // Append the image and image cover files if they are selected
+    if (imageFile) formData.append('image', imageFile);
+    if (imageCoverFile) formData.append('imagecover', imageCoverFile);
+
+    try {
+      // Make API request to add the product
+      await axios.post(
+        'https://e-commerce-api-v1-cdk5.onrender.com/api/v1/products',
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${auth.token}`,  // Add token to headers
+            'Content-Type': 'multipart/form-data',  // Important for sending files
+          },
+        }
+      );
+
+      // Show success message and close the modal
+      message.success('Product added successfully!');
+      onAddSuccess(); // Trigger success callback in parent component
+      form.resetFields(); // Reset the form
+      onClose(); // Close modal after adding product
+
+      // Console log the data being sent
+      console.log('Form data submitted:', values);
+      console.log('Selected Category ID:', values.category);  // Log selected category ID
+      console.log('Image file:', imageFile);
+      console.log('Image Cover file:', imageCoverFile);
+    } catch (error) {
+      console.error('Add product error:', error.response || error);
+      message.error('Failed to add product. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleImageCoverChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImageCoverFile(file);
-    }
+  // Handle image upload
+  const handleImageUpload = (file) => {
+    setImageFile(file);
+    return false; // Prevent automatic upload
+  };
+
+  // Handle image cover upload
+  const handleImageCoverUpload = (file) => {
+    setImageCoverFile(file);
+    return false; // Prevent automatic upload
   };
 
   return (
@@ -147,163 +96,142 @@ const AddProductModal = ({ visible, onClose, onAddSuccess }) => {
       visible={visible}
       onCancel={onClose}
       footer={null}
-      width={600}
+      onOk={() => form.submit()} // Trigger form submit when clicking the OK button
     >
-      <Form onSubmit={formik.handleSubmit} layout="vertical">
-        <Form.Item label="Product Name">
-          <Input
-            name="name"
-            value={formik.values.name}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            placeholder="Enter product name"
-          />
-          {formik.touched.name && formik.errors.name && (
-            <div style={{ color: 'red' }}>{formik.errors.name}</div>
-          )}
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={handleAddProduct}
+      >
+        <Form.Item
+          label="Product Title"
+          name="title"
+          rules={[{ required: true, message: 'Please enter product title' }]} >
+          <Input />
         </Form.Item>
 
-        <Form.Item label="Description">
-          <Input
-            name="description"
-            value={formik.values.description}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            placeholder="Enter product description"
-          />
-          {formik.touched.description && formik.errors.description && (
-            <div style={{ color: 'red' }}>{formik.errors.description}</div>
-          )}
+        <Form.Item
+          label="Product Name"
+          name="name"
+          rules={[{ required: true, message: 'Please enter product name' }]} >
+          <Input />
         </Form.Item>
 
-        <Form.Item label="Price">
-          <InputNumber
-            name="price"
-            value={formik.values.price}
-            onChange={(value) => formik.setFieldValue('price', value)}
-            onBlur={formik.handleBlur}
-            style={{ width: '100%' }}
-            placeholder="Enter product price"
-          />
-          {formik.touched.price && formik.errors.price && (
-            <div style={{ color: 'red' }}>{formik.errors.price}</div>
-          )}
+        <Form.Item
+          label="Description"
+          name="description"
+          rules={[{ required: true, message: 'Please enter product description' }]} >
+          <Input.TextArea rows={4} />
         </Form.Item>
 
-        <Form.Item label="Price After Discount">
-          <InputNumber
-            name="priceAfterDiscount"
-            value={formik.values.priceAfterDiscount}
-            onChange={(value) => formik.setFieldValue('priceAfterDiscount', value)}
-            onBlur={formik.handleBlur}
-            style={{ width: '100%' }}
-            placeholder="Enter price after discount"
-          />
+        <Form.Item
+          label="Quantity"
+          name="quantity"
+          rules={[{ required: true, message: 'Please enter quantity' }]} >
+          <InputNumber min={0} />
         </Form.Item>
 
-        <Form.Item label="Quantity">
-          <InputNumber
-            name="quantity"
-            value={formik.values.quantity}
-            onChange={(value) => formik.setFieldValue('quantity', value)}
-            onBlur={formik.handleBlur}
-            style={{ width: '100%' }}
-            placeholder="Enter quantity"
-          />
-          {formik.touched.quantity && formik.errors.quantity && (
-            <div style={{ color: 'red' }}>{formik.errors.quantity}</div>
-          )}
+        <Form.Item
+          label="Sold"
+          name="sold"
+          rules={[{ required: true, message: 'Please enter sold quantity' }]} >
+          <InputNumber min={0} />
         </Form.Item>
 
-        <Form.Item label="Color (comma separated)">
-          <Input
-            name="color"
-            value={formik.values.color}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            placeholder="Enter product colors"
-          />
+        <Form.Item
+          label="Price"
+          name="price"
+          rules={[{ required: true, message: 'Please enter product price' }]} >
+          <InputNumber min={0} />
         </Form.Item>
 
-        <Form.Item label="Cover Image">
-          <input
-            type="file"
-            onChange={handleImageCoverChange}
-            accept="image/*"
-            required
-          />
-          {formik.touched.imagecover && formik.errors.imagecover && (
-            <div style={{ color: 'red' }}>{formik.errors.imagecover}</div>
-          )}
+        <Form.Item
+          label="Price After Discount"
+          name="priceAfterDiscount"
+          rules={[{ required: true, message: 'Please enter price after discount' }]} >
+          <InputNumber min={0} />
         </Form.Item>
 
-        <Form.Item label="Product Image">
-          <input
-            type="file"
-            onChange={handleImageChange}
-            accept="image/*"
-            required
-          />
-          {formik.touched.image && formik.errors.image && (
-            <div style={{ color: 'red' }}>{formik.errors.image}</div>
-          )}
+        <Form.Item
+          label="Color"
+          name="color"
+          rules={[{ required: true, message: 'Please enter product color' }]} >
+          <Input />
         </Form.Item>
 
-        <Form.Item label="Category">
-          <Select
-            name="category"
-            value={formik.values.category}
-            onChange={(value) => formik.setFieldValue('category', value)}
-            loading={loadingCategories}
-            placeholder="Select category"
-          >
-            {Array.isArray(categories) && categories.length > 0 ? (
-              categories.map((category) => (
-                <Select.Option key={category._id} value={category._id}>
-                  {category.name}
-                </Select.Option>
-              ))
-            ) : (
-              <Select.Option value="" disabled>No categories available</Select.Option>
-            )}
+        <Form.Item
+          label="Category"
+          name="category"
+          rules={[{ required: true, message: 'Please select category' }]} >
+          <Select>
+            {categories.map((category) => (
+              <Select.Option key={category._id} value={category._id}>
+                {category.name}
+              </Select.Option>
+            ))}
           </Select>
-          {formik.touched.category && formik.errors.category && (
-            <div style={{ color: 'red' }}>{formik.errors.category}</div>
-          )}
         </Form.Item>
 
-        <Form.Item label="Product Title">
-          <Input
-            name="title"
-            value={formik.values.title}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            placeholder="Enter product title"
-          />
-          {formik.touched.title && formik.errors.title && (
-            <div style={{ color: 'red' }}>{formik.errors.title}</div>
-          )}
+        <Form.Item
+          label="Product Image URL (Cover)"
+          name="imagecover"
+          rules={[{ required: true, message: 'Please provide an image URL' }]} >
+          <Input />
         </Form.Item>
 
-        <Form.Item label="Sold">
-          <InputNumber
-            name="sold"
-            value={formik.values.sold}
-            onChange={(value) => formik.setFieldValue('sold', value)}
-            onBlur={formik.handleBlur}
-            style={{ width: '100%' }}
-            placeholder="Enter number of units sold"
-          />
+        <Form.Item
+          label="Product Image (Upload)"
+          name="image"
+          rules={[{ required: true, message: 'Please upload an image' }]} >
+          <Upload
+            name="image"
+            listType="picture-card"
+            showUploadList={false}
+            fileList={imageFile ? [imageFile] : []} // Pass fileList as an array
+            beforeUpload={handleImageUpload} // Custom upload logic
+          >
+            <div>
+              <UploadOutlined /> Click to upload
+            </div>
+          </Upload>
+        </Form.Item>
+
+        <Form.Item
+          label="Product Image Cover (Upload)"
+          name="imagecover"
+          rules={[{ required: true, message: 'Please upload an image cover' }]} >
+          <Upload
+            name="imagecover"
+            listType="picture-card"
+            showUploadList={false}
+            fileList={imageCoverFile ? [imageCoverFile] : []} // Pass fileList as an array
+            beforeUpload={handleImageCoverUpload} // Custom upload logic
+          >
+            <div>
+              <UploadOutlined /> Click to upload
+            </div>
+          </Upload>
         </Form.Item>
 
         <Form.Item>
-          <Button type="primary" htmlType="submit" style={{ width: '100%' }}>
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={loading}
+            block
+            disabled={loading} // Disable submit button while loading
+          >
             Add Product
           </Button>
         </Form.Item>
       </Form>
     </Modal>
   );
-};
+}
 
-export default AddProductModal;
+// Add PropTypes validation
+AddProductModal.propTypes = {
+  visible: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onAddSuccess: PropTypes.func.isRequired,
+};

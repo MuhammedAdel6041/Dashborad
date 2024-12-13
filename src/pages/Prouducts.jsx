@@ -1,5 +1,4 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable no-undef */
+ 
 import { useState } from 'react';
 import { Table, Button, message, Popconfirm, Tag, Image } from 'antd';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -18,7 +17,7 @@ const Products = () => {
   const queryClient = useQueryClient();
   const { auth } = useAuth();  // Access the auth context to get the token
 
-  const { data: products, isLoading, isError, error } = useQuery({
+  const { data: products, isLoading } = useQuery({
     queryKey: ['products'],
     queryFn: fetchProducts,
     onError: (err) => {
@@ -90,9 +89,20 @@ const Products = () => {
       ),
     },
     {
+      title: 'Product ID',
+      dataIndex: '_id',
+      key: '_id',
+    },
+    {
       title: 'Name',
       dataIndex: 'name',
       key: 'name',
+    },
+    {
+      title: 'Quantity',
+      dataIndex: 'quantity',
+      key: 'quantity',
+      render: (quantity) => <span>{quantity}</span>,
     },
     {
       title: 'Price',
@@ -115,7 +125,6 @@ const Products = () => {
           <Popconfirm
             title="Are you sure you want to delete this product?"
             onConfirm={() => handleDeleteProduct(record._id)}  // Pass the product ID to the handler
-            onCancel={() => setDeletingProduct(null)}
             okText="Yes"
             cancelText="No"
           >
@@ -127,7 +136,7 @@ const Products = () => {
       ),
     },
   ];
-
+  
   return (
     <div className="p-4">
       <div className="flex justify-between items-center mb-4">
@@ -137,15 +146,16 @@ const Products = () => {
         </Button>
       </div>
       <Table
-        columns={columns}
-        dataSource={products}
-        loading={isLoading}
-        rowKey={(record) => record._id}
-        pagination={{ pageSize: 10 }}
-        bordered
-        size="middle"
-        scroll={{ x: true }}
-      />
+  columns={columns}
+  dataSource={products}
+  loading={isLoading}
+  rowKey={(record) => record._id}
+  pagination={{ pageSize: 10 }}
+  bordered
+  size="middle"
+  scroll={{ x: true }}
+/>
+
       <AddProductModal
         visible={isModalVisible}
         onClose={() => setIsModalVisible(false)}
