@@ -54,13 +54,16 @@ const Sidebar = () => {
         <Menu.Item key="4" icon={<ProductOutlined />}>
           <Link to="/admin/product">Product</Link>
         </Menu.Item>
-        <Menu.Item key="5" icon={<CopyrightOutlined />}>
+        <Menu.Item key="5" icon={<ProductOutlined />}>
+          <Link to="/admin/order">Order</Link>
+        </Menu.Item>
+        <Menu.Item key="6" icon={<CopyrightOutlined />}>
           <Link to="/admin/Category">Category</Link>
         </Menu.Item>
-        <Menu.Item key="6" icon={<ShopOutlined />}>
+        <Menu.Item key="7" icon={<ShopOutlined />}>
           <Link to="/admin/Shop">Shop</Link>
         </Menu.Item>
-        <Menu.Item key="7" icon={<SettingOutlined />}>
+        <Menu.Item key="8" icon={<SettingOutlined />}>
           <Link to="/admin/settings">Settings</Link>
         </Menu.Item>
       </Menu>

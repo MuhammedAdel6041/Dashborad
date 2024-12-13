@@ -1,6 +1,5 @@
-// src/pages/User.js
-import   { useState } from "react";
-import { Table, Tag, Button, message } from "antd";
+import { useState } from "react";
+import { Table, Tag, Button, message, Popconfirm } from "antd";
 import { useAuth } from "../context/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
@@ -95,15 +94,20 @@ const User = () => {
       key: "action",
       render: (_, record) => (
         <div className="flex gap-2">
-          
-          <Button
-            type="link"
-            danger
-            onClick={() => handleDelete(record)}
-            loading={mutation.isLoading && mutation.variables?.id === record._id} // Show loading for the specific user being deleted
+          <Popconfirm
+            title="Are you sure you want to delete this user?"
+            onConfirm={() => handleDelete(record)} // Call handleDelete if confirmed
+            okText="Yes"
+            cancelText="No"
           >
-            Delete
-          </Button>
+            <Button
+              type="link"
+              danger
+              loading={mutation.isLoading && mutation.variables?.id === record._id} // Show loading for the specific user being deleted
+            >
+              Delete
+            </Button>
+          </Popconfirm>
         </div>
       ),
     },
@@ -120,7 +124,6 @@ const User = () => {
     }
   };
 
- 
   return (
     <div className="p-4">
       <div className="flex justify-between items-center mb-4">

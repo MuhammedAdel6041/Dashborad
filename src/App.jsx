@@ -18,6 +18,7 @@ import User from "./pages/User";
 import Prouducts from "./pages/Prouducts";
 import Shop from "./pages/Shop";
 import Category from "./pages/Category";
+import Order from "./pages/Order";
 
 const App = () => {
   return (
@@ -45,6 +46,7 @@ const App = () => {
                     <Route path="flash-sales" element={<FlashSales />} />
                     <Route path="Shop" element={<Shop />} />
                     <Route path="settings" element={<Settings />} />
+                    <Route path="order" element={<Order />} />
                   </Routes>
                 </DashboardLayout>
               </ProtectedRoute>
