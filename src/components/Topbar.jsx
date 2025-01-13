@@ -6,54 +6,29 @@ import {
   SettingOutlined,
   LogoutOutlined,
 } from "@ant-design/icons";
-import { useAuth } from "../context/AuthContext"; // Import useAuth to access logout
+import { useAuth } from "../context/AuthContext";
+import Notification from "./notification"; // Import Notification Component
 
 const { Header } = Layout;
 
 const Topbar = () => {
-  const { logout } = useAuth(); // Access the logout function from the AuthContext
+  const { logout } = useAuth();
 
   // Menu for avatar dropdown
   const avatarMenu = (
     <Menu>
       <Menu.Item key="profile" icon={<UserOutlined />}>
-        <button
-          type="button"
-          style={{
-            border: "none",
-            background: "none",
-            cursor: "pointer",
-            width: "100%",
-            textAlign: "left",
-          }}
-        >
-          Profile
-        </button>
+        Profile
       </Menu.Item>
       <Menu.Item key="settings" icon={<SettingOutlined />}>
-        <button
-          type="button"
-          style={{
-            border: "none",
-            background: "none",
-            cursor: "pointer",
-            width: "100%",
-            textAlign: "left",
-          }}
-        >
-          Settings
-        </button>
+        Settings
       </Menu.Item>
-      <Menu.Item
-        key="logout"
-        icon={<LogoutOutlined />}
-        style={{ color: "red" }} // Red color for logout
-      >
+      <Menu.Item key="logout" icon={<LogoutOutlined />} style={{ color: "red" }}>
         <button
           type="button"
           onClick={() => {
-            logout(); // Call the logout function
-            message.success("Logged out successfully!"); // Show a success message
+            logout();
+            message.success("Logged out successfully!");
           }}
           style={{
             border: "none",
@@ -61,34 +36,10 @@ const Topbar = () => {
             cursor: "pointer",
             width: "100%",
             textAlign: "left",
-            color: "inherit", // Inherit the red color from the parent Menu.Item
+            color: "inherit",
           }}
         >
           Logout
-        </button>
-      </Menu.Item>
-    </Menu>
-  );
-
-  // Menu for notifications dropdown
-  const notificationMenu = (
-    <Menu>
-      <Menu.Item key="1">Notification 1</Menu.Item>
-      <Menu.Item key="2">Notification 2</Menu.Item>
-      <Menu.Item key="3">Notification 3</Menu.Item>
-      <Menu.Divider />
-      <Menu.Item key="4">
-        <button
-          type="button"
-          style={{
-            border: "none",
-            background: "none",
-            cursor: "pointer",
-            width: "100%",
-            textAlign: "left",
-          }}
-        >
-          View All Notifications
         </button>
       </Menu.Item>
     </Menu>
@@ -114,8 +65,12 @@ const Topbar = () => {
       {/* Right Section */}
       <div style={{ marginRight: 20, display: "flex", alignItems: "center" }}>
         {/* Notification Dropdown */}
-        <Dropdown overlay={notificationMenu} trigger={["click"]}>
-          <Badge count={5} style={{ cursor: "pointer" }}>
+        <Dropdown
+          overlay={<Notification />}
+          trigger={["click"]}
+          placement="bottomRight"
+        >
+          <Badge count={4} style={{ cursor: "pointer" }}>
             <BellOutlined style={{ fontSize: 20 }} />
           </Badge>
         </Dropdown>
