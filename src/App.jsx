@@ -13,12 +13,15 @@ import Dashboard from "./pages/Dashboard";
  
 import FlashSales from "./pages/FlashSales";
  
-import Settings from "./pages/Settings";
+ 
 import User from "./pages/User";
 import Prouducts from "./pages/Prouducts";
-import Shop from "./pages/Shop";
+ 
 import Category from "./pages/Category";
 import Order from "./pages/Order";
+import Profile from "./pages/Profile";
+import Brand from "./pages/Brand";
+import Coupon from "./pages/Coupon";
 
 const App = () => {
   return (
@@ -41,11 +44,12 @@ const App = () => {
                     <Route path="/" element={<Navigate to="dashboard" />} />
                     <Route path="dashboard" element={<Dashboard />} />
                     <Route path="User" element={<User/>} />
+                    <Route path="Profile" element={<Profile/>} />
                     <Route path="Category" element={<Category />} />
                     <Route path="product" element={<Prouducts />} />
                     <Route path="flash-sales" element={<FlashSales />} />
-                    <Route path="Shop" element={<Shop />} />
-                    <Route path="settings" element={<Settings />} />
+                    <Route path="brand" element={<Brand />} />
+                    <Route path="coupon" element={<Coupon />} />
                     <Route path="order" element={<Order />} />
                   </Routes>
                 </DashboardLayout>

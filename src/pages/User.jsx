@@ -1,9 +1,13 @@
+// User.js
 import { useState } from "react";
-import { Table, Tag, Button, message, Popconfirm } from "antd";
+import { Table, Tag, Button, message, Popconfirm, Spin } from "antd";
 import { useAuth } from "../context/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import AddUserModal from "../components/AddUserModal";
+ 
+import { motion } from "framer-motion"; // Import motion
+import moment from "moment"; // Import moment
 
 // Fetch users from the API
 const fetchUsers = async ({ queryKey }) => {
@@ -34,7 +38,8 @@ const deleteUser = async ({ id, token }) => {
 const User = () => {
   const { auth } = useAuth(); // Access the token from AuthContext
   const queryClient = useQueryClient(); // React Query's QueryClient instance
-  const [isModalVisible, setIsModalVisible] = useState(false); // State to control modal visibility
+  const [isModalVisible, setIsModalVisible] = useState(false); // State to control Add User modal visibility
+  
 
   // Fetch users with React Query
   const { data: users, isLoading, refetch } = useQuery({
@@ -52,7 +57,9 @@ const User = () => {
     mutationFn: deleteUser, // Function to call for deletion
     onSuccess: () => {
       message.success("User deleted successfully!");
-      queryClient.invalidateQueries(["users"]); // Invalidate cache to refetch users
+      // Refetch users to refresh the data or reload the page
+      queryClient.invalidateQueries(["users"]);
+      // window.location.reload(); // Uncomment this line if you want to reload the page instead
     },
     onError: (error) => {
       console.error(error);
@@ -65,6 +72,7 @@ const User = () => {
     mutation.mutate({ id: record._id, token: auth.token });
   };
 
+  
   const columns = [
     {
       title: "Name",
@@ -90,10 +98,17 @@ const User = () => {
         active ? <Tag color="green">Active</Tag> : <Tag color="red">Inactive</Tag>,
     },
     {
+      title: "Created At",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (date) => moment(date).format("MMMM Do YYYY, h:mm A"), // Format date
+    },
+    {
       title: "Action",
       key: "action",
       render: (_, record) => (
         <div className="flex gap-2">
+           
           <Popconfirm
             title="Are you sure you want to delete this user?"
             onConfirm={() => handleDelete(record)} // Call handleDelete if confirmed
@@ -124,31 +139,50 @@ const User = () => {
     }
   };
 
+  // Sort users by creation date (new to old)
+  const sortedUsers = users ? [...users].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) : [];
+
   return (
     <div className="p-4">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold">Users</h2>
         <Button
           type="primary"
-          onClick={() => setIsModalVisible(true)} // Open modal on button click
+          onClick={() => setIsModalVisible(true)} // Open Add User modal
         >
           Add User
         </Button>
       </div>
-      <Table
-        columns={columns}
-        dataSource={users}
-        loading={isLoading}
-        rowKey={(record) => record._id} // Use `_id` as the unique key
-        pagination={{ pageSize: 10 }}
-        bordered
-      />
+
+      {isLoading ? ( // Show spinner if loading
+        <div className="flex justify-center items-center h-64">
+          <Spin size="large" />
+        </div>
+      ) : (
+        <motion.div
+          initial={{ x: -100, opacity: 0 }} // Start from left with opacity 0
+          animate={{ x: 0, opacity: 1 }} // Animate to position and full opacity
+          exit={{ x: 100, opacity: 0 }} // Exit animation (slide out to the right)
+          transition={{ duration: 0.5 }} // Transition duration
+        >
+          <Table
+            columns={columns}
+            dataSource={sortedUsers} // Use sorted users
+            rowKey={(record) => record._id} // Use `_id` as the unique key
+            pagination={{ pageSize: 10 }}
+            bordered
+          />
+        </motion.div>
+      )}
+
       <AddUserModal
         visible={isModalVisible}
-        onClose={() => setIsModalVisible(false)} // Close modal on cancel
+        onClose={() => setIsModalVisible(false)} // Close Add User modal
         onSuccess={refetch} // Refetch users after a successful add
         token={auth.token} // Pass token to modal for API request
       />
+
+     
     </div>
   );
 };

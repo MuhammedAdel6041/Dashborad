@@ -1,28 +1,29 @@
-import { Layout, Input, Badge, Avatar, Dropdown, Menu, message } from "antd";
+import { Layout, Input, Avatar, Dropdown, Menu, message } from "antd";
 import {
-  BellOutlined,
   SearchOutlined,
   UserOutlined,
-  SettingOutlined,
-  LogoutOutlined,
+    LogoutOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "../context/AuthContext";
-import Notification from "./notification"; // Import Notification Component
+import { useNavigate } from "react-router-dom";
 
 const { Header } = Layout;
 
 const Topbar = () => {
   const { logout } = useAuth();
+  const navigate = useNavigate();
 
   // Menu for avatar dropdown
   const avatarMenu = (
     <Menu>
-      <Menu.Item key="profile" icon={<UserOutlined />}>
+      <Menu.Item
+        key="profile"
+        icon={<UserOutlined />}
+        onClick={() => navigate("/admin/Profile")} // Update to match protected routes
+      >
         Profile
       </Menu.Item>
-      <Menu.Item key="settings" icon={<SettingOutlined />}>
-        Settings
-      </Menu.Item>
+      
       <Menu.Item key="logout" icon={<LogoutOutlined />} style={{ color: "red" }}>
         <button
           type="button"
@@ -55,29 +56,15 @@ const Topbar = () => {
         alignItems: "center",
       }}
     >
-      {/* Search Input */}
       <Input
         placeholder="Search..."
         prefix={<SearchOutlined />}
         style={{ width: 200, marginLeft: 20 }}
       />
 
-      {/* Right Section */}
       <div style={{ marginRight: 20, display: "flex", alignItems: "center" }}>
-        {/* Notification Dropdown */}
-        <Dropdown
-          overlay={<Notification />}
-          trigger={["click"]}
-          placement="bottomRight"
-        >
-          <Badge count={4} style={{ cursor: "pointer" }}>
-            <BellOutlined style={{ fontSize: 20 }} />
-          </Badge>
-        </Dropdown>
-
-        {/* Avatar Dropdown */}
         <Dropdown overlay={avatarMenu} trigger={["click"]}>
-          <Avatar style={{ marginLeft: 20, cursor: "pointer" }}>A</Avatar>
+          <Avatar  src="https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w0NzEyNjZ8MHwxfHNlYXJjaHw3fHxwZW9wbGV8ZW58MHwwfHx8MTcxMTExMTM4N3ww&ixlib=rb-4.0.3&q=80&w=1080" style={{ marginLeft: 20, cursor: "pointer" }}>A</Avatar>
         </Dropdown>
       </div>
     </Header>

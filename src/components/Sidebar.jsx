@@ -3,10 +3,12 @@ import { Link } from "react-router-dom";
 import {
   DashboardOutlined,
   UserOutlined,
-  SettingOutlined,
+ 
   ProductOutlined,
-  ShopOutlined,
+ 
   CopyrightOutlined,
+  BoldOutlined,
+  AccountBookOutlined,
 } from "@ant-design/icons";
 
 const { Sider } = Layout;
@@ -60,11 +62,11 @@ const Sidebar = () => {
         <Menu.Item key="6" icon={<CopyrightOutlined />}>
           <Link to="/admin/Category">Category</Link>
         </Menu.Item>
-        <Menu.Item key="7" icon={<ShopOutlined />}>
-          <Link to="/admin/Shop">Shop</Link>
+        <Menu.Item key="7" icon={<BoldOutlined />}>
+          <Link to="/admin/brand">Brand</Link>
         </Menu.Item>
-        <Menu.Item key="8" icon={<SettingOutlined />}>
-          <Link to="/admin/settings">Settings</Link>
+        <Menu.Item key="8" icon={<AccountBookOutlined />}>
+          <Link to="/admin/coupon">Coupon</Link>
         </Menu.Item>
       </Menu>
     </Sider>

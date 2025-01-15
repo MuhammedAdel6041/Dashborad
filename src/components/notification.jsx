@@ -50,15 +50,13 @@ export default function Notification() {
       message.error("Failed to delete review. Please try again.");
     }
   };
-
   if (loading) {
     return (
-      <div className="flex justify-center items-center" style={{ padding: "20px" }}>
-        <Spin size="large" />
+      <div style={{ textAlign: "center", padding: "50px" }}>
+        <Spin />
       </div>
     );
   }
-
   return (
     <div style={{ maxWidth: "600px", margin: "0 auto", padding: "20px" }}>
       <List

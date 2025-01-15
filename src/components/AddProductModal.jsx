@@ -12,6 +12,8 @@ export default function AddProductModal({ visible, onClose, onAddSuccess }) {
   const [categories, setCategories] = useState([]); // State for categories
   const [imageFile, setImageFile] = useState(null); // State for image file
   const [imageCoverFile, setImageCoverFile] = useState(null); // State for image cover file
+  const [imagePreview, setImagePreview] = useState(null); // Preview for the image
+  const [imageCoverPreview, setImageCoverPreview] = useState(null); // Preview for the image cover
 
   // Fetch categories from the API
   useEffect(() => {
@@ -31,45 +33,36 @@ export default function AddProductModal({ visible, onClose, onAddSuccess }) {
   // Handle form submission
   const handleAddProduct = async (values) => {
     setLoading(true);
-
-    // Create FormData to send the image and image cover as files
+  
     const formData = new FormData();
-
-    // Append text fields (excluding image and imagecover)
     Object.keys(values).forEach((key) => {
       if (key !== 'image' && key !== 'imagecover') {
         formData.append(key, values[key]);
       }
     });
-
-    // Append the image and image cover files if they are selected
     if (imageFile) formData.append('image', imageFile);
     if (imageCoverFile) formData.append('imagecover', imageCoverFile);
-
+  
     try {
-      // Make API request to add the product
       await axios.post(
         'https://e-commerce-api-v1-cdk5.onrender.com/api/v1/products',
         formData,
         {
           headers: {
-            Authorization: `Bearer ${auth.token}`,  // Add token to headers
-            'Content-Type': 'multipart/form-data',  // Important for sending files
+            Authorization: `Bearer ${auth.token}`,
+            'Content-Type': 'multipart/form-data',
           },
         }
       );
-
-      // Show success message and close the modal
+  
+      // Trigger success message only here
       message.success('Product added successfully!');
-      onAddSuccess(); // Trigger success callback in parent component
-      form.resetFields(); // Reset the form
-      onClose(); // Close modal after adding product
-
-      // Console log the data being sent
-      console.log('Form data submitted:', values);
-      console.log('Selected Category ID:', values.category);  // Log selected category ID
-      console.log('Image file:', imageFile);
-      console.log('Image Cover file:', imageCoverFile);
+      
+      onAddSuccess(); // This should only trigger re-fetching or updates, without another message
+      form.resetFields();
+      setImagePreview(null);
+      setImageCoverPreview(null);
+      onClose();
     } catch (error) {
       console.error('Add product error:', error.response || error);
       message.error('Failed to add product. Please try again.');
@@ -77,19 +70,6 @@ export default function AddProductModal({ visible, onClose, onAddSuccess }) {
       setLoading(false);
     }
   };
-
-  // Handle image upload
-  const handleImageUpload = (file) => {
-    setImageFile(file);
-    return false; // Prevent automatic upload
-  };
-
-  // Handle image cover upload
-  const handleImageCoverUpload = (file) => {
-    setImageCoverFile(file);
-    return false; // Prevent automatic upload
-  };
-
   return (
     <Modal
       title="Add Product"
@@ -172,44 +152,70 @@ export default function AddProductModal({ visible, onClose, onAddSuccess }) {
           </Select>
         </Form.Item>
 
+        {/* Cover Image URL */}
         <Form.Item
-          label="Product Image URL (Cover)"
-          name="imagecover"
-          rules={[{ required: true, message: 'Please provide an image URL' }]} >
+          label="Product Image Cover URL"
+          name="imagecoverurl"
+          rules={[{ required: false, message: 'Please enter an image URL for the product cover' }]}
+        >
           <Input />
         </Form.Item>
 
         <Form.Item
           label="Product Image (Upload)"
           name="image"
-          rules={[{ required: true, message: 'Please upload an image' }]} >
+          rules={[{ required: true, message: 'Please upload an image' }]}
+        >
           <Upload
             name="image"
             listType="picture-card"
             showUploadList={false}
-            fileList={imageFile ? [imageFile] : []} // Pass fileList as an array
-            beforeUpload={handleImageUpload} // Custom upload logic
+            beforeUpload={(file) => {
+              setImageFile(file);
+              setImagePreview(URL.createObjectURL(file)); // Set preview URL
+              return false; // Prevent automatic upload
+            }}
           >
-            <div>
-              <UploadOutlined /> Click to upload
-            </div>
+            {imagePreview ? (
+              <img
+                src={imagePreview}
+                alt="Product"
+                style={{ width: '100%', maxHeight: '200px', objectFit: 'cover' }}
+              />
+            ) : (
+              <div>
+                <UploadOutlined /> Click to upload
+              </div>
+            )}
           </Upload>
         </Form.Item>
 
         <Form.Item
           label="Product Image Cover (Upload)"
           name="imagecover"
-          rules={[{ required: true, message: 'Please upload an image cover' }]} >
+          rules={[{ required: false, message: 'Please upload an image cover' }]}
+        >
           <Upload
             name="imagecover"
             listType="picture-card"
             showUploadList={false}
-            fileList={imageCoverFile ? [imageCoverFile] : []} // Pass fileList as an array
-            beforeUpload={handleImageCoverUpload} // Custom upload logic
+            beforeUpload={(file) => {
+              setImageCoverFile(file);
+              setImageCoverPreview(URL.createObjectURL(file)); // Set preview URL
+              return false; // Prevent automatic upload
+            }}
           >
-            <div>
-              <UploadOutlined /> Click to upload
-            </div>
+            {imageCoverPreview ? (
+              <img
+                src={imageCoverPreview}
+                alt="Product Cover"
+                style={{ width: '100%', maxHeight: '200px', objectFit: 'cover' }}
+              />
+            ) : (
+              <div>
+                <UploadOutlined /> Click to upload
+              </div>
+            )}
           </Upload>
         </Form.Item>
 
